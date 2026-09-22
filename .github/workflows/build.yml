@@ -13,13 +13,22 @@ jobs:
       with:
         ref: ${{ github.ref }}
 
-    - name: Install Toolchain & Python 2
+    - name: Install Toolchain & Fix GCC Header
       run: |
         sudo apt-get update
         sudo apt-get install -y build-essential gcc-arm-linux-gnueabi libncurses5-dev bison flex libssl-dev bc zip python2
         
-        # Imposta python2 come binario python predefinito per il wrapper del kernel
+        # Link python2 per gcc-wrapper.py
         sudo ln -sf /usr/bin/python2 /usr/bin/python
+        
+        # Crea gli header di supporto per GCC 10, 11 e 12 puntando a compiler-gcc4.h
+        cd include/linux
+        sudo cp compiler-gcc4.h compiler-gcc7.h 2>/dev/null || true
+        sudo cp compiler-gcc4.h compiler-gcc8.h 2>/dev/null || true
+        sudo cp compiler-gcc4.h compiler-gcc9.h 2>/dev/null || true
+        sudo cp compiler-gcc4.h compiler-gcc10.h 2>/dev/null || true
+        sudo cp compiler-gcc4.h compiler-gcc11.h 2>/dev/null || true
+        sudo cp compiler-gcc4.h compiler-gcc12.h 2>/dev/null || true
 
     - name: Build Kernel Image
       run: |
@@ -27,7 +36,6 @@ jobs:
         export CROSS_COMPILE=arm-linux-gnueabi-
         export KCFLAGS="-w"
         
-        # Cerca la configurazione corretta
         if [ -f arch/arm/configs/lineageos_flo_defconfig ]; then
           make lineageos_flo_defconfig
         elif [ -f arch/arm/configs/lineage_flo_defconfig ]; then
