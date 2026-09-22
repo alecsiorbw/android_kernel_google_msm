@@ -21,7 +21,7 @@ jobs:
         # Link python2 per gcc-wrapper.py
         sudo ln -sf /usr/bin/python2 /usr/bin/python
         
-        # Crea gli header di supporto per GCC 10, 11 e 12 puntando a compiler-gcc4.h
+        # Crea gli header di supporto per GCC 10, 11 e 12
         cd include/linux
         sudo cp compiler-gcc4.h compiler-gcc7.h 2>/dev/null || true
         sudo cp compiler-gcc4.h compiler-gcc8.h 2>/dev/null || true
@@ -34,7 +34,7 @@ jobs:
       run: |
         export ARCH=arm
         export CROSS_COMPILE=arm-linux-gnueabi-
-        export KCFLAGS="-w"
+        export KCFLAGS="-w -fgnu89-inline"
         
         if [ -f arch/arm/configs/lineageos_flo_defconfig ]; then
           make lineageos_flo_defconfig
@@ -46,7 +46,7 @@ jobs:
           make lineagew_flo_defconfig
         fi
         
-        make -j$(nproc) KCFLAGS="-w"
+        make -j$(nproc) KCFLAGS="-w -fgnu89-inline"
 
     - name: Package AnyKernel3
       run: |
