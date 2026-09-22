@@ -34,7 +34,7 @@ jobs:
       run: |
         export ARCH=arm
         export CROSS_COMPILE=arm-linux-gnueabi-
-        export KCFLAGS="-w -fgnu89-inline"
+        export KCFLAGS="-w -fgnu89-inline -Wa,-mimplicit-it=thumb -fno-store-merging"
         
         if [ -f arch/arm/configs/lineageos_flo_defconfig ]; then
           make lineageos_flo_defconfig
@@ -46,7 +46,7 @@ jobs:
           make lineagew_flo_defconfig
         fi
         
-        make -j$(nproc) KCFLAGS="-w -fgnu89-inline"
+        make -j$(nproc) KCFLAGS="-w -fgnu89-inline -Wa,-mimplicit-it=thumb -fno-store-merging"
 
     - name: Package AnyKernel3
       run: |
