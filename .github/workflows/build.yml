@@ -13,28 +13,22 @@ jobs:
       with:
         ref: ${{ github.ref }}
 
-    - name: Install Toolchain & Fix GCC Header
+    - name: Install Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential gcc-arm-linux-gnueabi libncurses5-dev bison flex libssl-dev bc zip python2
+        sudo apt-get install -y build-essential libncurses5-dev bison flex libssl-dev bc zip python2 git
         
         # Link python2 per gcc-wrapper.py
         sudo ln -sf /usr/bin/python2 /usr/bin/python
-        
-        # Crea gli header di supporto per GCC 10, 11 e 12
-        cd include/linux
-        sudo cp compiler-gcc4.h compiler-gcc7.h 2>/dev/null || true
-        sudo cp compiler-gcc4.h compiler-gcc8.h 2>/dev/null || true
-        sudo cp compiler-gcc4.h compiler-gcc9.h 2>/dev/null || true
-        sudo cp compiler-gcc4.h compiler-gcc10.h 2>/dev/null || true
-        sudo cp compiler-gcc4.h compiler-gcc11.h 2>/dev/null || true
-        sudo cp compiler-gcc4.h compiler-gcc12.h 2>/dev/null || true
+
+    - name: Download Toolchain ARM GCC 4.9
+      run: |
+        git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9 toolchain
 
     - name: Build Kernel Image
       run: |
         export ARCH=arm
-        export CROSS_COMPILE=arm-linux-gnueabi-
-        export KCFLAGS="-w -fgnu89-inline -Wa,-mimplicit-it=thumb -fno-store-merging"
+        export CROSS_COMPILE=$(pwd)/toolchain/bin/arm-linux-androideabi-
         
         if [ -f arch/arm/configs/lineageos_flo_defconfig ]; then
           make lineageos_flo_defconfig
@@ -46,7 +40,7 @@ jobs:
           make lineagew_flo_defconfig
         fi
         
-        make -j$(nproc) KCFLAGS="-w -fgnu89-inline -Wa,-mimplicit-it=thumb -fno-store-merging"
+        make -j$(nproc)
 
     - name: Package AnyKernel3
       run: |
