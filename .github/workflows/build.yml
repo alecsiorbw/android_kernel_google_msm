@@ -22,8 +22,20 @@ jobs:
       run: |
         export ARCH=arm
         export CROSS_COMPILE=arm-linux-gnueabi-
-        make lineagew_flo_defconfig || make flo_defconfig || make lineageos_flo_defconfig
-        make -j$(nproc)
+        export KCFLAGS="-w"
+        
+        # Cerca la configurazione corretta tra quelle tipiche di Lineage/flo
+        if [ -f arch/arm/configs/lineageos_flo_defconfig ]; then
+          make lineageos_flo_defconfig
+        elif [ -f arch/arm/configs/lineage_flo_defconfig ]; then
+          make lineage_flo_defconfig
+        elif [ -f arch/arm/configs/flo_defconfig ]; then
+          make flo_defconfig
+        else
+          make lineagew_flo_defconfig
+        fi
+        
+        make -j$(nproc) KCFLAGS="-w"
 
     - name: Package AnyKernel3
       run: |
